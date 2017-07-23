@@ -24,13 +24,13 @@ def start_game():
 				if event.key == pygame.K_ESCAPE:
 					run = False
 				elif event.key in MoveDirections.UP:
-					pass
+					print('Snake move up')
 				elif event.key in MoveDirections.LEFT:
-					pass
+					print('Snake move left')
 				elif event.key in MoveDirections.DOWN:
-					pass
+					print('Snake move down')
 				elif event.key in MoveDirections.RIGHT:
-					pass
+					print('Snake move right')
 
 		pygame.display.update()
 
