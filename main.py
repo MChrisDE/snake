@@ -1,12 +1,11 @@
-import pygame
 from snake import start_game
-from constants import BLACK, WHITE
+from constants import *
 
 buttons = []
 
 
 class Button:
-	def __init__(self, text, x, y, font, fn=lambda: None):
+	def __init__(self, text, x, y, font=DEFAULT_FONT40, fn=lambda: None):
 		self.text = font.render(text, True, BLACK)
 		self.rect = self.text.get_rect()
 		self.rect.center = (x, y)
@@ -19,17 +18,17 @@ class Button:
 
 
 def create_buttons():
-	font = pygame.font.SysFont("monospace", 40)
-	Button("Snake", 250, 100, font)
-	Button("Start game", 250, 250, font, start)
-	Button("Exit Game", 250, 400, font, exit_game)
+	Button("Snake", 250, 100)
+	Button("Start game", 250, 250, fn=start)
+	Button("Exit Game", 250, 400, fn=exit_game)
 
 	pygame.display.update()
 
 
 def exit_game():
-
 	pygame.quit()
+
+
 def start():
 	pygame.quit()
 	start_game()

@@ -1,5 +1,4 @@
-import pygame
-from constants import BLACK, WHITE
+from constants import *
 
 
 def start_game():
