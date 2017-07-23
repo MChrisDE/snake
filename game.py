@@ -1,4 +1,5 @@
 from constants import *
+from snake import Snake
 
 
 def start_game():
@@ -10,6 +11,8 @@ def start_game():
 	root = fullscreen()
 	pygame.display.set_caption("Snake")
 	root.fill(Colors.GREY)
+	snake = Snake(root)
+	print(snake)
 
 	run = True
 	while run:
