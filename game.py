@@ -31,14 +31,14 @@ def start_game():
 					print('Snake move down')
 				elif event.key in MoveDirections.RIGHT:
 					print('Snake move right')
-			elif event.type == pygame.MOUSEMOTION and MoveDirections.delta(event) is not MoveDirections.NONE:
-				if MoveDirections.delta(event) is MoveDirections.LEFT:
+			elif event.type == pygame.MOUSEMOTION and MoveDirections.get_direction(event) is not MoveDirections.NONE:
+				if MoveDirections.get_direction(event) is MoveDirections.UP:
 					print('Snake move up')
-				elif MoveDirections.delta(event) is MoveDirections.LEFT:
+				elif MoveDirections.get_direction(event) is MoveDirections.LEFT:
 					print('Snake move left')
-				elif MoveDirections.delta(event) is MoveDirections.DOWN:
+				elif MoveDirections.get_direction(event) is MoveDirections.DOWN:
 					print('Snake move down')
-				elif MoveDirections.delta(event) is MoveDirections.RIGHT:
+				elif MoveDirections.get_direction(event) is MoveDirections.RIGHT:
 					print('Snake move right')
 		pygame.display.update()
 
