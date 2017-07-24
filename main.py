@@ -1,5 +1,5 @@
-from game import start_game
 from constants import *
+from game import start_game
 
 buttons = []
 

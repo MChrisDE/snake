@@ -1,26 +1,4 @@
-from constants import MoveDirections
-
-
-class Position(tuple):
-	is_head = False
-
-	def __new__(cls, *position, **pos):
-		if not pos.get('x', True) and not pos.get('y', True):
-			seq = pos.get('x'), pos.get('y')
-		elif position and len(position) is 2:
-			seq = position
-		else:
-			seq = 0, 0
-		return super().__new__(cls, seq)
-
-	def __str__(self):
-		return ','.join(str(xy) for xy in self)
-
-	def get_x(self):
-		return self[0]
-
-	def get_y(self):
-		return self[1]
+from constants import MoveDirections, Position
 
 
 class Snake(list):
