@@ -6,13 +6,16 @@ class Snake(list):
 		is_head = False
 
 		def __new__(cls, *position, **pos):
+			if 'head' in pos:
+				is_head = pos['head']
+				del pos['head']
 			return super().__new__(cls, *position, **pos)
 
 	def __init__(self, root, **initial):
 		super().__init__()
 		self.length = initial.get('length', 3)
 		self.direction = initial.get('direction', MoveDirections.RIGHT)
-		self.head_position = initial.get('position', Snake.Part())
+		self.head_position = initial.get('position', Snake.Part(head=True))
 		self.root = root
 
 		self.append(self.head_position)
