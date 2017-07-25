@@ -8,7 +8,7 @@ class Snake(list):
 		def __new__(cls, *position, **pos):
 			return super().__new__(cls, *position, **pos)
 
-		def __init__(self, head):
+		def __init__(self, head=False):
 			super().__init__()
 			self.is_head = head
 
