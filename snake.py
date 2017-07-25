@@ -8,7 +8,7 @@ class Snake(list):
 		def __new__(cls, *position, **pos):
 			return super().__new__(cls, *position, **pos)
 
-		def __init__(self, head=False):
+		def __init__(self, head=False, *position, **pos):
 			super().__init__()
 			self.is_head = head
 
@@ -21,7 +21,7 @@ class Snake(list):
 
 		self.append(self.head_position)
 		for i in range(1, self.length):
-			self.append(Snake.Part(self.head_position.get_y() - i, self.head_position.get_y()))
+			self.append(Snake.Part(x=self.head_position.get_x() - i, y=self.head_position.get_y()))
 
 	def __str__(self):
 		return f'Snake: {";".join([str(part) for part in self])}'
