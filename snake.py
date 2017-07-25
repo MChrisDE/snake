@@ -8,11 +8,15 @@ class Snake(list):
 		def __new__(cls, *position, **pos):
 			return super().__new__(cls, *position, **pos)
 
+		def __init__(self, head):
+			super().__init__()
+			self.is_head = head
+
 	def __init__(self, root, **initial):
 		super().__init__()
 		self.length = initial.get('length', 3)
 		self.direction = initial.get('direction', MoveDirections.RIGHT)
-		self.head_position = initial.get('position', Snake.Part())
+		self.head_position = initial.get('position', Snake.Part(True))
 		self.root = root
 
 		self.append(self.head_position)
