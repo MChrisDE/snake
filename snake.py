@@ -6,10 +6,14 @@ class Snake(list):
 		is_head = False
 
 		def __new__(cls, *position, **pos):
-			if 'head' in pos:
-				is_head = pos['head']
-				del pos['head']
 			return super().__new__(cls, *position, **pos)
+
+		def __init__(self, *position, **pos):
+			super().__init__()
+
+			if 'head' in pos:
+				self.is_head = pos['head']
+				del pos['head']
 
 	def __init__(self, root, **initial):
 		super().__init__()
