@@ -50,6 +50,6 @@ def fullscreen():
 	modes = pygame.display.list_modes(16)
 	if not modes:
 		print('16-bit not supported')
-		return pygame.display.set_mode((1280, 720))
+		return pygame.display.set_mode((1280, 720), pygame.HWSURFACE)
 	else:
-		return pygame.display.set_mode(modes[0], pygame.FULLSCREEN, 16)
+		return pygame.display.set_mode(modes[0], pygame.HWSURFACE | pygame.FULLSCREEN, 16)

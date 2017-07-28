@@ -37,7 +37,7 @@ def start():
 if __name__ == '__main__':
 	pygame.init()
 
-	root = pygame.display.set_mode((500, 500))
+	root = pygame.display.set_mode((500, 500), pygame.HWSURFACE)
 	pygame.display.set_caption("Snake Menu")
 	root.fill(Colors.WHITE)
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
 			print(event)
 			if event.type == pygame.QUIT:
 				run = False
-			if event.type == pygame.MOUSEBUTTONUP:
+			elif event.type == pygame.MOUSEBUTTONUP:
 				for button in buttons:
 					if button.collidepoint(pygame.mouse.get_pos()):
 						button.run()
