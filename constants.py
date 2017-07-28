@@ -1,5 +1,7 @@
 import pygame
 
+pygame.init()
+
 
 class Colors:
 	GREY = 50, 50, 50
@@ -8,7 +10,6 @@ class Colors:
 
 
 class Fonts:
-	pygame.font.init()
 	DEFAULT_FONT40 = pygame.font.SysFont("monospace", 40)  # set after pygame.init()
 
 	@staticmethod
@@ -17,11 +18,13 @@ class Fonts:
 
 
 class MoveDirections:
-	UP = {'UP', pygame.K_UP, pygame.K_w}
-	LEFT = {'LEFT', pygame.K_LEFT, pygame.K_a}
-	DOWN = {'DOWN', pygame.K_DOWN, pygame.K_s}
-	RIGHT = {'RIGHT', pygame.K_RIGHT, pygame.K_d}
-	NONE = {}
+	DIRECTION = {
+		'UP': {pygame.K_UP, pygame.K_w},
+		'LEFT': {pygame.K_LEFT, pygame.K_a},
+		'DOWN': {pygame.K_DOWN, pygame.K_s},
+		'RIGHT': {pygame.K_RIGHT, pygame.K_d},
+		'NONE': {}
+	}
 
 	last_direction = last_event = None
 
@@ -40,10 +43,13 @@ class MoveDirections:
 		return cls.last_direction
 
 
+DIRECTION = MoveDirections.DIRECTION
+
+
 class Position(tuple):
 	def __new__(cls, *position, **pos):
-		def valid_pos(component):
-			isinstance(pos.get(component, None), int)
+		def valid_pos(component) -> bool:
+			return isinstance(pos.get(component, None), int)
 
 		if valid_pos('x') and valid_pos('y'):
 			seq = pos.get('x'), pos.get('y')
@@ -53,10 +59,10 @@ class Position(tuple):
 			seq = 0, 0
 		return super().__new__(cls, seq)
 
-	def get_x(self):
+	def get_x(self) -> int:
 		return self[0]
 
-	def get_y(self):
+	def get_y(self) -> int:
 		return self[1]
 
 	def __str__(self):
@@ -65,29 +71,29 @@ class Position(tuple):
 	def determine_movement_direction(self, other):
 		def horizontal_movement():
 			if self.get_x() > other.get_x():
-				return MoveDirections.RIGHT
+				return DIRECTION['RIGHT']
 			elif self.get_x() < other.get_x():
-				return MoveDirections.LEFT
+				return DIRECTION['LEFT']
 
 		def vertical_movement():
 			if self.get_y() < other.get_y():
-				return MoveDirections.UP
+				return DIRECTION['UP']
 			elif self.get_y() > other.get_y():
-				return MoveDirections.DOWN
+				return DIRECTION['DOWN']
 
 		horizontal_distance = abs(self.get_x() - other.get_x())
 		vertical_distance = abs(self.get_y() - other.get_y())
 
 		if not isinstance(other, type(self)):
-			return MoveDirections.NONE
+			return DIRECTION['NONE']
 		elif horizontal_distance > vertical_distance:
 			return horizontal_movement()
 		elif horizontal_distance < vertical_distance:
 			return vertical_movement()
 		# this is a tricky situation (= RNG time)
-		# rather return MoveDirection.NONE for a distance equal to 0
+		# rather return DIRECTION.NONE for a distance equal to 0
 		elif horizontal_distance == vertical_distance and vertical_distance is not 0:
 			import random
 			return random.choice((horizontal_movement, vertical_movement))()
 		else:
-			return MoveDirections.NONE
+			return DIRECTION['NONE']

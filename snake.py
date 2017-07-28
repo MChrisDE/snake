@@ -21,7 +21,7 @@ class Snake(list):
 	def __init__(self, root, **initial):
 		super().__init__()
 		self.length = initial.get('length', 3)
-		self.direction = initial.get('direction', MoveDirections.RIGHT)
+		self.direction = initial.get('direction', MoveDirections.DIRECTION['RIGHT'])
 		self.head_position = initial.get('position', Snake.Part(head=True))
 		self.root = root
 

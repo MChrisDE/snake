@@ -1,55 +1,40 @@
-from constants import *
+from constants import pygame, MoveDirections, Colors
 from snake import Snake
+from window_manager import Window
+
+DIRECTION = MoveDirections.DIRECTION
+get_direction = MoveDirections.get_direction
 
 
-def start_game():
-	global run
-	run = False
+def start_game(menu_id: int):
+	root = Window.get_fullscreen(title='Snake', fill=Colors.GREY)
+	root['snake'] = Snake(root)
+	print(root['snake'])
 
-	pygame.init()
+	def handle_key_press(event):
+		if event.key == pygame.K_ESCAPE:
+			root.set_state(False)
+		elif event.key in DIRECTION['UP']:
+			print('Snake move up')
+		elif event.key in DIRECTION['LEFT']:
+			print('Snake move left')
+		elif event.key in DIRECTION['DOWN']:
+			print('Snake move down')
+		elif event.key in DIRECTION['RIGHT']:
+			print('Snake move right')
 
-	root = fullscreen()
-	pygame.display.set_caption("Snake")
-	root.fill(Colors.GREY)
-	snake = Snake(root)
-	print(snake)
+	def handle_mouse_motion(event):
+		if get_direction(event) is not DIRECTION['NONE']:
+			if get_direction(event) is DIRECTION['UP']:
+				print('Snake move up')
+			elif get_direction(event) is DIRECTION['LEFT']:
+				print('Snake move left')
+			elif get_direction(event) is DIRECTION['DOWN']:
+				print('Snake move down')
+			elif get_direction(event) is DIRECTION['RIGHT']:
+				print('Snake move right')
 
-	run = True
-	while run:
-		for event in pygame.event.get():
-			print(event)
-			if event.type == pygame.QUIT:
-				run = False
-			elif event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_ESCAPE:
-					run = False
-				elif event.key in MoveDirections.UP:
-					print('Snake move up')
-				elif event.key in MoveDirections.LEFT:
-					print('Snake move left')
-				elif event.key in MoveDirections.DOWN:
-					print('Snake move down')
-				elif event.key in MoveDirections.RIGHT:
-					print('Snake move right')
-			elif event.type == pygame.MOUSEMOTION and MoveDirections.get_direction(event) is not MoveDirections.NONE:
-				if MoveDirections.get_direction(event) is MoveDirections.UP:
-					print('Snake move up')
-				elif MoveDirections.get_direction(event) is MoveDirections.LEFT:
-					print('Snake move left')
-				elif MoveDirections.get_direction(event) is MoveDirections.DOWN:
-					print('Snake move down')
-				elif MoveDirections.get_direction(event) is MoveDirections.RIGHT:
-					print('Snake move right')
-		pygame.display.update()
+	def handle_quit(event):
+		Window.display_window(menu_id)
 
-	pygame.quit()
-
-
-def fullscreen():
-	# give me the biggest 16-bit display available
-	modes = pygame.display.list_modes(16)
-	if not modes:
-		print('16-bit not supported')
-		return pygame.display.set_mode((1280, 720), pygame.HWSURFACE)
-	else:
-		return pygame.display.set_mode(modes[0], pygame.HWSURFACE | pygame.FULLSCREEN, 16)
+	root.mainloop(handle_quit=handle_quit, handle_key_press=handle_key_press, handle_mouse_motion=handle_mouse_motion)
