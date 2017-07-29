@@ -7,13 +7,9 @@ get_direction = MoveDirections.get_direction
 
 
 def start_game(menu_id: int):
-	root = Window.get_fullscreen(title='Snake', fill=Colors.GREY)
-	root['snake'] = Snake(root)
-	print(root['snake'])
-
-	def handle_key_press(event):
+	def on_key_press(event):
 		if event.key == pygame.K_ESCAPE:
-			root.set_state(False)
+			on_quit(event)
 		elif event.key in DIRECTION['UP']:
 			print('Snake move up')
 		elif event.key in DIRECTION['LEFT']:
@@ -23,7 +19,7 @@ def start_game(menu_id: int):
 		elif event.key in DIRECTION['RIGHT']:
 			print('Snake move right')
 
-	def handle_mouse_motion(event):
+	def on_mouse_motion(event):
 		if get_direction(event) is not DIRECTION['NONE']:
 			if get_direction(event) is DIRECTION['UP']:
 				print('Snake move up')
@@ -34,7 +30,16 @@ def start_game(menu_id: int):
 			elif get_direction(event) is DIRECTION['RIGHT']:
 				print('Snake move right')
 
-	def handle_quit(event):
-		Window.display_window(menu_id)
+	def on_quit(event):
+		# root.set_state(False, kill=True)
+		Window.display_window(menu_id)  # use the id to get main menu window
 
-	root.mainloop(handle_quit=handle_quit, handle_key_press=handle_key_press, handle_mouse_motion=handle_mouse_motion)
+	def on_all_events_handled():
+		root['snake'].draw()
+
+	root = Window.get_fullscreen(title='Snake', fill=Colors.GREY, max_fps=20, on_quit=on_quit,
+			on_key_press=on_key_press, on_mouse_motion=on_mouse_motion, on_all_events_handled=on_all_events_handled)
+	root['snake'] = Snake(root, position=(5, 5))
+	print(root['snake'])
+
+	root.mainloop()

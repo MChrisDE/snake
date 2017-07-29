@@ -3,7 +3,7 @@ from window_manager import Window
 from game import start_game
 
 if __name__ == '__main__':
-	root = Window(title='Snake Menu')
+	root = Window(title='Snake Menu', max_fps=10)
 	root.set_buttons({
 		'text': 'Snake',
 		'x': 250,

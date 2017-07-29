@@ -1,4 +1,4 @@
-from constants import pygame, Colors, Fonts
+from constants import Colors, Fonts, pygame, DEFAULT_RES
 
 
 class Window(dict):
@@ -19,53 +19,32 @@ class Window(dict):
 		def draw(self):
 			self.root.window.blit(self.text, self.rect)
 
-	def __init__(self, dim: tuple = (500, 500), title: str = '', fill: tuple = Colors.WHITE, mode=None, **kwargs):
-		super().__init__(**kwargs)
-		pygame.init()
+	class Clock:
+		def __init__(self):
+			self.clock = pygame.time.Clock()
+			self.max_fps = self.total_ticks = 0
 
-		if mode is None:
-			mode = pygame.HWSURFACE
-		else:
-			mode |= pygame.HWSURFACE
-		self.window = pygame.display.set_mode(dim, mode)
-		pygame.display.set_caption(title)
-		self.window.fill(fill)
+		def tick(self):
+			self.total_ticks += 1
+			self.clock.tick(self.max_fps)
+			return f'Tick {self.total_ticks}, FPS {self.get_fps()}'
 
-		self.args = kwargs
-		self.args['dim'] = dim
-		self.args['title'] = title
-		self.args['fill'] = fill
-		self.args['mode'] = mode
+		def set_max_fps(self, max_fps):
+			self.max_fps = max_fps
 
-		if 'id' in kwargs:
-			self.id = kwargs['id']
-		else:
-			self.id = len(Window._instances)
-			Window._instances.append(self)
+		def get_fps(self):
+			return self.clock.get_fps()
 
-		if not self.get('buttons'):
-			self['buttons'] = []
-		else:
-			for button in self['buttons']:
-				button.draw()
-		self.set_state(False)
+	def __new__(cls, dim: tuple = (500, 500), **kwargs):
+		kwargs['dim'] = dim
+		self = dict.__new__(cls, **kwargs)  # well, it magically works...
 
-	def set_buttons(self, *mkwargs):
-		for kwargs in mkwargs:
-			self['buttons'].append(Window.Button(self, **kwargs))
-		self.update_display()
+		self.id = len(Window._instances)
+		Window._instances.append(self)
+		self['buttons'] = []
+		self.clock = Window.Clock()
 
-	def _get_clicked_button(self) -> Button:
-		for button in self['buttons']:
-			if button.collidepoint(pygame.mouse.get_pos()):
-				return button
-		return Window.Button(self)
-
-	def mainloop(self, **fn):
-		def handle_quit(ev):
-			pass
-
-		def handle_click(ev):
+		def on_click(ev):
 			button = self._get_clicked_button()
 			if button is None:
 				pass  # No button was clicked or there are no buttons
@@ -73,43 +52,84 @@ class Window(dict):
 				self.set_state(False)
 				button.run()
 
-		def handle_key_press(ev):
+		def on_key_press(ev):
 			if ev.key == pygame.K_ESCAPE:
 				self.set_state(False)
 
-		if 'handle_quit' not in fn:
-			fn['handle_quit'] = handle_quit
-		if 'handle_click' not in fn:
-			fn['handle_click'] = handle_click
-		if 'handle_key_press' not in fn:
-			fn['handle_key_press'] = handle_key_press
-		if 'handle_mouse_motion' not in fn:
-			fn['handle_mouse_motion'] = handle_quit
+		on_mouse_motion = on_all_events_handled = on_quit = lambda *ev: None
+		self.fn = {
+			'on_quit': kwargs.get('on_quit', on_quit),
+			'on_click': kwargs.get('on_click', on_click),
+			'on_key_press': kwargs.get('on_key_press', on_key_press),
+			'on_mouse_motion': kwargs.get('on_mouse_motion', on_mouse_motion),
+			'on_all_events_handled': kwargs.get('on_all_events_handled', on_all_events_handled)
+		}
 
+		self.args = kwargs  # save the args for reconstruction
+		return self
+
+	def __init__(self, dim: tuple = (500, 500), title: str = '', fill: tuple = Colors.WHITE, mode: int = None,
+			max_fps=60, *args, **kwargs):
+		super().__init__(**kwargs)
+		pygame.init()
+
+		if mode is None:
+			mode = pygame.HWSURFACE
+		else:
+			mode |= pygame.HWSURFACE | pygame.DOUBLEBUF
+		self.window = pygame.display.set_mode(dim, mode)
+		pygame.display.set_caption(title)
+		self.window.fill(fill)
+		self.clock.set_max_fps(max_fps)
+
+		for button in self['buttons']:
+			button.draw()
+
+		self.set_state(False)
+
+	def set_buttons(self, *mkwargs):
+		for kwargs in mkwargs:
+			self['buttons'].append(Window.Button(self, **kwargs))
+
+	def _get_clicked_button(self) -> Button:
+		for button in self['buttons']:
+			if button.collidepoint(pygame.mouse.get_pos()):
+				return button
+
+	def mainloop(self, **fn):
+		self.fn.update(fn)
 		self.set_state(True)
 
-		while self['run']:
+		while self.get_state():
 			for event in pygame.event.get():
 				print(event)
-				if event.type == pygame.QUIT:
+				if event.type == pygame.QUIT or not self.get_state():
 					self.set_state(False)
-					fn['handle_quit'](event)
+					self.fn['on_quit'](event)
 				elif event.type == pygame.MOUSEBUTTONUP:
-					fn['handle_click'](event)
+					self.fn['on_click'](event)
 				elif event.type == pygame.KEYDOWN:
-					fn['handle_key_press'](event)
+					self.fn['on_key_press'](event)
 				elif event.type == pygame.MOUSEMOTION:
-					fn['handle_mouse_motion'](event)
+					self.fn['on_mouse_motion'](event)
 
-			self.update_display()
+			self.fn['on_all_events_handled']()
+			print(self.clock.tick())
+			pygame.display.update()
 
-	def set_state(self, activate):
-		if activate:
+	def set_state(self, should_activate: bool, kill: bool = False):
+		"""
+		Activate or deactivate a window, depending on the value of should_activate
+		Note: It is not possible to have more than one window active at any given moment!
+
+		:param kill: Kill the window instance
+		:param should_activate: True: activate window, False: deactivate it
+		"""
+		if should_activate:
 			if Window._active_instance is not None:  # allow only one Window to be active
-				for window in Window._instances:
-					window.set_state(False)
+				Window.get_active_window().set_state(False)  # Forcefully 'close' window
 
-			self.__init__(**self.args)
+			self.__init__(**self.args)  # reconstruct the window
 
 			Window._active_instance = self.id
 			self['run'] = True
@@ -119,32 +139,37 @@ class Window(dict):
 			self['run'] = False
 
 			self.args['id'] = self.id
-		# self.args['dim'] = self.window.get_size()
+			# self.args['dim'] = self.window.get_size() # if the window was resized
+			if kill:
+				del Window._instances[self.id]
 
 	def get_state(self):
 		return self['run']
 
-	def update_display(self):
-		if self['run']:
-			pygame.display.update()
-		else:
-			print('This window is not running, we should not update it')
+	@classmethod
+	def get_active_window(cls):
+		try:
+			return cls._instances[cls._active_instance]
+		except (IndexError, TypeError):  # IndexError <= This should never happen!
+			print('There is no active window')
 
 	@classmethod
-	def display_window(cls, w_id: int):
+	def _get_window(cls, w_id: int):
 		try:
-			cls._instances[w_id].set_state(True)
+			return cls._instances[w_id]
 		except IndexError:
 			print(f'There is not window with id: {w_id}')
 
+	@classmethod
+	def display_window(cls, w_id: int):
+		cls._get_window(w_id).mainloop()
+
 	@staticmethod
 	def get_fullscreen(**kwargs):
-		pygame.init()
+		"""
+		Create a fullscreen Window with the highest supported resolution
 
-		# give me the biggest 16-bit display available
-		modes = pygame.display.list_modes(16)
-		if not modes:
-			print('16-bit not supported')
-			return Window((1280, 720), **kwargs)
-		else:
-			return Window(modes[0], mode=pygame.FULLSCREEN, depth=16, **kwargs)
+		:param kwargs: Are passed to the Window()
+		:return: the fullscreen Window
+		"""
+		return Window(DEFAULT_RES, mode=pygame.FULLSCREEN, **kwargs)

@@ -1,6 +1,7 @@
 import pygame
 
 pygame.init()
+DEFAULT_RES = pygame.display.Info().current_w, pygame.display.Info().current_h
 
 
 class Colors:
